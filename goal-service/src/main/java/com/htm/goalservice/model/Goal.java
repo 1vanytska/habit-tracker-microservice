@@ -18,14 +18,11 @@ public class Goal {
     @NotNull
     private String title;
 
-    @NotNull
-    private String pictures;
+    private String picture;
 
-    @NotNull
     private String description;
 
-    @NotNull
-    private int categoryId;
+    private UUID categoryId;
 
     @NotNull
     private boolean isPublic;
@@ -36,7 +33,6 @@ public class Goal {
     @NotNull
     private String status;
 
-    @NotNull
     private LocalDate archivationTime;
 
     public UUID getGoalId() {
@@ -55,12 +51,12 @@ public class Goal {
         this.title = title;
     }
 
-    public String getPictures() {
-        return pictures;
+    public String getPicture() {
+        return picture;
     }
 
-    public void setPictures(String pictures) {
-        this.pictures = pictures;
+    public void setPicture(String picture) {
+        this.picture = picture;
     }
 
     public String getDescription() {
@@ -71,11 +67,11 @@ public class Goal {
         this.description = description;
     }
 
-    public int getCategoryId() {
+    public UUID getCategoryId() {
         return categoryId;
     }
 
-    public void setCategoryId(int categoryId) {
+    public void setCategoryId(UUID categoryId) {
         this.categoryId = categoryId;
     }
 
