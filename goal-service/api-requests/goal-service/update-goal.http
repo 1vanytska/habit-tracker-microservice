@@ -1,5 +1,16 @@
-### GET request to example server
-GET https://examples.http-client.intellij.net/get
-    ?generated-in=IntelliJ IDEA
+### Updates an existing goal entity
+PUT http://localhost:4000/goals/dd133d04-0ced-44c3-a1f1-a51d330161bd
+Content-Type: application/json
+
+{
+  "title": "The First Goal",
+  "picture": "https://example.com/image.png",
+  "description": "Complete a Spring Boot course and build a project.",
+  "categoryId": "125e4567-e89b-12d3-a456-426614174000",
+  "isPublic": true,
+  "deadline": "2025-12-31",
+  "status": "completed",
+  "archivationTime": "2025-01-01"
+}
 
 ###

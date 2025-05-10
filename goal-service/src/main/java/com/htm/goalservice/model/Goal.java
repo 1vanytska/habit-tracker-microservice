@@ -16,6 +16,9 @@ public class Goal {
     private UUID goalId;
 
     @NotNull
+    private UUID userId;
+
+    @NotNull
     private String title;
 
     private String picture;
@@ -41,6 +44,14 @@ public class Goal {
 
     public void setGoalId(UUID goalId) {
         this.goalId = goalId;
+    }
+
+    public UUID getUserId() {
+        return userId;
+    }
+
+    public void setUserId(UUID userId) {
+        this.userId = userId;
     }
 
     public String getTitle() {
@@ -79,8 +90,8 @@ public class Goal {
         return isPublic;
     }
 
-    public void setPublic(boolean aPublic) {
-        isPublic = aPublic;
+    public void setIsPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
     }
 
     public LocalDate getDeadline() {

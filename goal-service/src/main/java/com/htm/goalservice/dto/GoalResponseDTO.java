@@ -2,6 +2,7 @@ package com.htm.goalservice.dto;
 
 public class GoalResponseDTO {
     private String goalId;
+    private String userId;
     private String title;
     private String picture;
     private String description;
@@ -17,6 +18,14 @@ public class GoalResponseDTO {
 
     public void setGoalId(String goalId) {
         this.goalId = goalId;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getTitle() {
@@ -55,8 +64,8 @@ public class GoalResponseDTO {
         return isPublic;
     }
 
-    public void setPublic(boolean aPublic) {
-        isPublic = aPublic;
+    public void setIsPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
     }
 
     public String getDeadline() {

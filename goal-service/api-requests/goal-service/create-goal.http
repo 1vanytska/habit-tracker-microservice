@@ -1,5 +1,17 @@
-### GET request to example server
-GET https://examples.http-client.intellij.net/get
-    ?generated-in=IntelliJ IDEA
+### Creates a new goal entity
+POST http://localhost:4000/goals
+Content-Type: application/json
+
+{
+  "userId": "137e4567-e89b-12d3-a456-426614174000",
+  "title": "Goal One",
+  "picture": "https://example.com/image.png",
+  "description": "Complete a Spring Boot course and build a project.",
+  "categoryId": "125e4567-e89b-12d3-a456-426614174000",
+  "isPublic": true,
+  "deadline": "2025-12-31",
+  "status": "in progress",
+  "archivationTime": "2026-01-01"
+}
 
 ###
