@@ -1,0 +1,4 @@
+### GET request to get all goals
+GET http://localhost:4004/api/goals
+
+###

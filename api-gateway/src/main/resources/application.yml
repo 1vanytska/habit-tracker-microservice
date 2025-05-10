@@ -1,0 +1,25 @@
+server:
+  port: 4004
+
+spring:
+  cloud:
+    gateway:
+      routes:
+         ## REST CLIENT -> http://localhost:4004/api/goals
+         ## API GATEWAY -> http://goal-service:4000/goals
+         ## GOAL SERVICE (SPRING BOOT APP) -> /goals -> Goals Array
+        - id: goal-service-route
+          uri: http://goal-service:4000
+          predicates:
+            - Path=/api/goals/**
+          filters:
+            - StripPrefix=1
+
+        ## REST CLIENT -> http://localhost:4004/api-docs/goals
+        ## API GATEWAY -> http://goal-service:4000/v3/api-docs
+        - id: api-docs-goal-route
+          uri: http://goal-service:4000
+          predicates:
+            - Path=/api-docs/goals
+          filters:
+            - RewritePath=/api-docs/goals,/v3/api-docs
