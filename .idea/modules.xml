@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/habit-tracker-microservice.iml" filepath="$PROJECT_DIR$/habit-tracker-microservice.iml" />
+      <module fileurl="file://$PROJECT_DIR$/subscription-service/subscription-service.iml" filepath="$PROJECT_DIR$/subscription-service/subscription-service.iml" />
     </modules>
   </component>
 </project>

@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "subscription";
+
+service SubscriptionService {
+  rpc CreateSubscriptionAccount (SubscriptionRequest) returns (SubscriptionResponse);
+}
+
+message SubscriptionRequest {
+  string userId = 1;
+  string name = 2;
+  string email = 3;
+}
+
+message SubscriptionResponse {
+  string subscriptionId = 1;
+  string planName = 2;
+  string status = 3;
+  string startDate = 4;
+  string endDate = 5;
+}
