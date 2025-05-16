@@ -1,0 +1,286 @@
+openapi: 3.0.3
+info:
+  title: Goal Interaction API
+  version: 1.0.0
+  description: API for liking, disliking, and commenting on goals.
+
+paths:
+  /goals/{goal_id}/like:
+    post:
+      summary: User likes a public goal
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: goal_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the goal to like
+      requestBody:
+        description: No request body needed
+        content:
+          application/json:
+            schema:
+              type: object
+              example: {}
+      responses:
+        '200':
+          description: Like registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {}
+
+  /goals/{goal_id}/dislike:
+    post:
+      summary: User removes like from a public goal
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: goal_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the goal to remove like from
+      requestBody:
+        description: No request body needed
+        content:
+          application/json:
+            schema:
+              type: object
+              example: {}
+      responses:
+        '200':
+          description: Like removed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {}
+
+  /comments:
+    post:
+      summary: Comment on other users' goals
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - goal_id
+                - content
+              properties:
+                goal_id:
+                  type: integer
+                  description: ID of the goal being commented on
+                  example: 1
+                content:
+                  type: string
+                  description: Comment text
+                  example: Great progress!
+      responses:
+        '201':
+          description: Comment created
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {}
+
+    get:
+      summary: View a list of goal's comments
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: goal_id
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: ID of the goal to fetch comments for
+      responses:
+        '200':
+          description: List of comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    content:
+                      type: string
+                      example: Updated comment
+                    user:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          user_id:
+                            type: integer
+                            example: 1
+                          nickname:
+                            type: string
+                            example: nickname
+                          profile_picture:
+                            type: string
+                            example: img.jpg
+                    date:
+                      type: string
+                      format: date
+                      example: '2024-09-09'
+
+  /comments/{comment_id}:
+    put:
+      summary: Users edit their comments
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: comment_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the comment to edit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+              properties:
+                content:
+                  type: string
+                  example: Updated comment
+      responses:
+        '200':
+          description: Comment updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {}
+
+    delete:
+      summary: Users delete their comments
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: comment_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the comment to delete
+      responses:
+        '204':
+          description: Comment deleted successfully
+
+  # --- Нові шляхи для Suspend User та Block/Unblock Users ---
+
+  /users/{user_id}/suspend:
+    post:
+      summary: Moderator suspends a user account for violating rules (internal command)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the user to suspend
+      requestBody:
+        description: No request body needed
+        content:
+          application/json:
+            schema:
+              type: object
+              example: {}
+      responses:
+        '200':
+          description: User suspended successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: "User account suspended."
+      x-internal-command: true
+      # це кастомне поле для позначення, що це внутрішня команда
+
+  /users/{user_id}/block:
+    post:
+      summary: Admin blocks a user account for violating rules (external synchronous command)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the user to block
+      requestBody:
+        description: No request body needed
+        content:
+          application/json:
+            schema:
+              type: object
+              example: {}
+      responses:
+        '200':
+          description: User blocked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: "User account blocked."
+
+  /users/{user_id}/unblock:
+    post:
+      summary: Admin unblocks a user account (external synchronous command)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the user to unblock
+      requestBody:
+        description: No request body needed
+        content:
+          application/json:
+            schema:
+              type: object
+              example: {}
+      responses:
+        '200':
+          description: User unblocked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: "User account unblocked."
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

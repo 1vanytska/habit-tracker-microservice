@@ -1,0 +1,91 @@
+asyncapi: '2.6.0'
+info:
+  title: Subscription Payment Events
+  version: '1.0.0'
+  description: |
+    AsyncAPI specification for internal payment and subscription update events.
+
+channels:
+  payment/successful:
+    description: Channel where successful payment events are published.
+    publish:
+      operationId: PaymentSuccessfulEvent
+      summary: Payment completed successfully
+      message:
+        $ref: '#/components/messages/PaymentSuccessfulEvent'
+    subscribe:
+      operationId: ProcessSuccessfulPayment
+      summary: Subscription service updates subscription status on payment success
+      message:
+        $ref: '#/components/messages/PaymentSuccessfulEvent'
+
+  subscription/update:
+    description: Channel where subscription upgrade commands are published.
+    publish:
+      operationId: SubscriptionUpgradedEvent
+      summary: Unlock new premium features after payment completion
+      message:
+        $ref: '#/components/messages/SubscriptionUpgradedEvent'
+    subscribe:
+      operationId: GrantPremiumAccess
+      summary: Service unlocks premium goal features on subscription upgrade
+      message:
+        $ref: '#/components/messages/SubscriptionUpgradedEvent'
+
+components:
+  messages:
+    PaymentSuccessfulEvent:
+      contentType: application/json
+      payload:
+        type: object
+        required:
+          - paymentId
+          - userId
+          - amount
+          - currency
+          - timestamp
+        properties:
+          paymentId:
+            type: string
+            description: Unique identifier of the payment
+            example: "pay_123456"
+          userId:
+            type: string
+            description: ID of the user who made the payment
+            example: "user_789"
+          amount:
+            type: number
+            description: Amount paid
+            example: 29.99
+          currency:
+            type: string
+            description: Currency code
+            example: "USD"
+          timestamp:
+            type: string
+            format: date-time
+            description: Time of payment confirmation
+            example: "2025-05-16T12:34:56Z"
+
+    SubscriptionUpgradedEvent:
+      contentType: application/json
+      payload:
+        type: object
+        required:
+          - userId
+          - newPlan
+          - activatedAt
+        properties:
+          userId:
+            type: string
+            description: ID of the user whose subscription is upgraded
+            example: "user_789"
+          newPlan:
+            type: string
+            description: The new subscription plan activated
+            example: "premium"
+          activatedAt:
+            type: string
+            format: date-time
+            description: Timestamp when subscription was upgraded
+            example: "2025-05-16T12:35:10Z"

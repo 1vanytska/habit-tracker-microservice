@@ -1,0 +1,290 @@
+openapi: 3.0.0
+info:
+  title: Goal Steps and Daily Notes API
+  version: 1.0.0
+  description: API for managing steps and daily notes of goals
+
+servers:
+  - url: https://api.example.com
+    description: Production server
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    GoalStepCreateRequest:
+      type: object
+      required:
+        - goal_id
+        - description
+        - id_done
+      properties:
+        goal_id:
+          type: integer
+          example: 1
+        description:
+          type: string
+          example: Step 1
+        id_done:
+          type: boolean
+          example: true
+
+    GoalStepResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        goal_id:
+          type: integer
+          example: 1
+        description:
+          type: string
+          example: New Step 1
+        id_done:
+          type: boolean
+          example: false
+        completion_date:
+          type: string
+          nullable: true
+          format: date
+          example: null
+
+    GoalStepUpdateRequest:
+      type: object
+      properties:
+        description:
+          type: string
+          example: New Step 1
+        id_done:
+          type: boolean
+          example: false
+        completion_date:
+          type: string
+          nullable: true
+          format: date
+          example: null
+
+    DailyNoteCreateRequest:
+      type: object
+      required:
+        - content
+        - date
+      properties:
+        content:
+          type: string
+          example: Today’s progress
+        date:
+          type: string
+          format: date
+          example: 2024-09-08
+
+    DailyNoteResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        goal_id:
+          type: integer
+          example: 1
+        content:
+          type: string
+          example: Today’s new progress
+        date:
+          type: string
+          format: date
+          example: 2024-09-08
+
+    DailyNoteUpdateRequest:
+      type: object
+      properties:
+        content:
+          type: string
+          example: Today’s new progress
+        date:
+          type: string
+          format: date
+          example: 2024-09-08
+
+  parameters:
+    step_id:
+      name: step_id
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: ID of the goal step
+
+    note_id:
+      name: note_id
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: ID of the daily note
+
+    goal_id:
+      name: goal_id
+      in: query
+      schema:
+        type: integer
+      description: Filter steps or notes by goal ID
+
+paths:
+  /steps:
+    post:
+      summary: Create a step for a goal
+      security:
+        - bearerAuth: []
+      tags:
+        - Steps
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoalStepCreateRequest'
+      responses:
+        '201':
+          description: Step created successfully
+
+    get:
+      summary: View goal steps
+      security:
+        - bearerAuth: []
+      tags:
+        - Steps
+      parameters:
+        - $ref: '#/components/parameters/goal_id'
+      responses:
+        '200':
+          description: List of steps for a goal
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GoalStepResponse'
+
+  /steps/{step_id}:
+    put:
+      summary: Update a goal step
+      security:
+        - bearerAuth: []
+      tags:
+        - Steps
+      parameters:
+        - $ref: '#/components/parameters/step_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoalStepUpdateRequest'
+      responses:
+        '200':
+          description: Step updated successfully
+
+    delete:
+      summary: Delete a goal step
+      security:
+        - bearerAuth: []
+      tags:
+        - Steps
+      parameters:
+        - $ref: '#/components/parameters/step_id'
+      responses:
+        '204':
+          description: Step deleted successfully
+
+  /notes/{note_id}:
+    post:
+      summary: Add notes to goals
+      security:
+        - bearerAuth: []
+      tags:
+        - Daily Notes
+      parameters:
+        - $ref: '#/components/parameters/note_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DailyNoteCreateRequest'
+      responses:
+        '201':
+          description: Note created successfully
+
+    get:
+      summary: View a goal's daily note
+      security:
+        - bearerAuth: []
+      tags:
+        - Daily Notes
+      parameters:
+        - $ref: '#/components/parameters/note_id'
+      responses:
+        '200':
+          description: Daily note details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyNoteResponse'
+
+    put:
+      summary: Edit daily notes added to goals
+      security:
+        - bearerAuth: []
+      tags:
+        - Daily Notes
+      parameters:
+        - $ref: '#/components/parameters/note_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DailyNoteUpdateRequest'
+      responses:
+        '200':
+          description: Note updated successfully
+
+    delete:
+      summary: Delete daily notes added to goals
+      security:
+        - bearerAuth: []
+      tags:
+        - Daily Notes
+      parameters:
+        - $ref: '#/components/parameters/note_id'
+      responses:
+        '204':
+          description: Note deleted successfully
+
+  /notes:
+    get:
+      summary: View list of daily notes for a goal
+      security:
+        - bearerAuth: []
+      tags:
+        - Daily Notes
+      parameters:
+        - $ref: '#/components/parameters/goal_id'
+      responses:
+        '200':
+          description: List of daily notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DailyNoteResponse'

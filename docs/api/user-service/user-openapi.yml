@@ -1,0 +1,229 @@
+openapi: 3.0.0
+info:
+  title: User and Friendship API
+  version: 1.0.0
+  description: API for searching users and managing friendships
+
+servers:
+  - url: https://api.example.com
+    description: Production server
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    UserDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: User ID
+        nickname:
+          type: string
+          description: User nickname
+        email:
+          type: string
+          description: User email
+
+    FriendshipCreateDto:
+      type: object
+      required:
+        - friendId
+      properties:
+        friendId:
+          type: string
+          description: ID of the user to send a friend request to
+
+    FriendshipDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Friendship or request ID
+        userId:
+          type: string
+          description: User ID
+        friendId:
+          type: string
+          description: Friend's user ID
+        status:
+          type: string
+          enum: [PENDING, ACCEPTED, DECLINED]
+          description: Status of the friendship or request
+        createdAt:
+          type: string
+          format: date-time
+
+  parameters:
+    nickname:
+      name: nickname
+      in: query
+      required: true
+      schema:
+        type: string
+      description: Nickname to search for
+
+    friendship_id:
+      name: friendship_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: ID of the friendship or friend request
+
+paths:
+  /users/search:
+    get:
+      summary: Search for users by nickname
+      description: Search for users matching the provided nickname
+      security:
+        - bearerAuth: []
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/components/parameters/nickname'
+      responses:
+        '200':
+          description: List of users matching nickname
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserDto'
+        '401':
+          description: Unauthorized
+
+  /friendships:
+    post:
+      summary: Send a friend request
+      description: Send a friend request to another user
+      security:
+        - bearerAuth: []
+      tags:
+        - Friendships
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FriendshipCreateDto'
+      responses:
+        '201':
+          description: Friend request sent successfully
+        '400':
+          description: Invalid request data
+        '401':
+          description: Unauthorized
+        '403':
+          description: User suspended or request already pending
+
+    get:
+      summary: View active friend requests
+      description: Get list of active friend requests for the logged-in user
+      security:
+        - bearerAuth: []
+      tags:
+        - Friendships
+      responses:
+        '200':
+          description: List of active friend requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FriendshipDto'
+        '401':
+          description: Unauthorized
+        '403':
+          description: User suspended
+
+  /friends:
+    get:
+      summary: View friend list
+      description: Get list of friends for the logged-in user
+      security:
+        - bearerAuth: []
+      tags:
+        - Friendships
+      responses:
+        '200':
+          description: List of friends
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FriendshipDto'
+        '401':
+          description: Unauthorized
+        '403':
+          description: User suspended
+
+  /friendships/{friendship_id}/accept:
+    post:
+      summary: Accept a friend request
+      description: Accept a pending friend request
+      security:
+        - bearerAuth: []
+      tags:
+        - Friendships
+      parameters:
+        - $ref: '#/components/parameters/friendship_id'
+      responses:
+        '200':
+          description: Friend request accepted
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden (e.g., no pending request or user suspended)
+        '404':
+          description: Friend request not found
+
+  /friendships/{friendship_id}/decline:
+    post:
+      summary: Decline a friend request
+      description: Decline a pending friend request
+      security:
+        - bearerAuth: []
+      tags:
+        - Friendships
+      parameters:
+        - $ref: '#/components/parameters/friendship_id'
+      responses:
+        '200':
+          description: Friend request declined
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden (e.g., user suspended)
+        '404':
+          description: Friend request not found
+
+  /friends/{friendship_id}:
+    delete:
+      summary: Delete a friend
+      description: Remove a friend from friend list
+      security:
+        - bearerAuth: []
+      tags:
+        - Friendships
+      parameters:
+        - $ref: '#/components/parameters/friendship_id'
+      responses:
+        '200':
+          description: Friend deleted successfully
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden (e.g., user suspended)
+        '404':
+          description: Friend not found

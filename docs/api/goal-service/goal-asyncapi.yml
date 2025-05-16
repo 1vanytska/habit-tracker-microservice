@@ -1,0 +1,55 @@
+asyncapi: 2.6.0
+info:
+  title: Goal Progress Service
+  version: 1.0.0
+  description: |
+    Service for handling user goal progress updates.
+    The "Complete Goal" event marks a goal as completed and may trigger subscription renewal bonuses or recommendations.
+
+channels:
+  goal.completed:
+    description: Channel for goal completion events
+    publish:
+      summary: User goal completion event
+      operationId: goalCompleted
+      message:
+        $ref: '#/components/messages/GoalCompletedEvent'
+
+components:
+  messages:
+    GoalCompletedEvent:
+      summary: User goal completion event
+      contentType: application/json
+      payload:
+        type: object
+        required:
+          - goal_id
+          - user_id
+          - completed_at
+        properties:
+          goal_id:
+            type: integer
+            description: The ID of the goal
+            example: 123
+          user_id:
+            type: integer
+            description: The ID of the user
+            example: 456
+          completed_at:
+            type: string
+            format: date-time
+            description: The timestamp when the goal was completed
+            example: '2025-05-16T12:34:56Z'
+          triggered_subscription_bonus:
+            type: boolean
+            description: Whether a subscription bonus was triggered
+            example: true
+          triggered_recommendation:
+            type: boolean
+            description: Whether a recommendation was triggered
+            example: false
+
+servers:
+  production:
+    url: mqtt://broker.example.com
+    protocol: mqtt

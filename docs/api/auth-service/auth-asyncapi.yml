@@ -1,0 +1,110 @@
+asyncapi: 2.6.0
+info:
+  title: User Profile and Subscription Service
+  version: 1.0.0
+  description: |
+    Asynchronous events and commands for creating user profiles, 
+    subscriptions, and updating profiles after registration.
+
+servers:
+  internalBroker:
+    url: amqp://internal-broker:5672
+    protocol: amqp
+    description: Internal message broker (e.g., RabbitMQ)
+
+channels:
+  user.created:
+    description: Event signaling user creation
+    subscribe:
+      operationId: onUserCreated
+      summary: Handle user created event
+      message:
+        $ref: '#/components/messages/UserCreatedEvent'
+
+  command.createUserProfile:
+    description: Command to create a user profile after registration
+    publish:
+      operationId: createUserProfile
+      summary: Create user profile
+      message:
+        $ref: '#/components/messages/CreateUserProfileCommand'
+
+  command.createFreeSubscription:
+    description: Command to initialize a free subscription for a user
+    publish:
+      operationId: createFreeSubscription
+      summary: Initialize free subscription
+      message:
+        $ref: '#/components/messages/CreateFreeSubscriptionCommand'
+
+  command.updateUserProfile:
+    description: Command to update the user profile
+    publish:
+      operationId: updateUserProfile
+      summary: Update user profile
+      message:
+        $ref: '#/components/messages/UpdateUserProfileCommand'
+
+components:
+  messages:
+    UserCreatedEvent:
+      name: UserCreatedEvent
+      title: User Created Event
+      summary: Message signaling that a user was successfully created
+      payload:
+        type: object
+        properties:
+          userId:
+            type: string
+            description: Unique user identifier
+          email:
+            type: string
+            format: email
+          nickname:
+            type: string
+        required:
+          - userId
+          - email
+          - nickname
+
+    CreateUserProfileCommand:
+      name: CreateUserProfileCommand
+      title: Create User Profile Command
+      summary: Command to create a user profile after registration
+      payload:
+        type: object
+        properties:
+          userId:
+            type: string
+            description: User identifier to create profile for
+        required:
+          - userId
+
+    CreateFreeSubscriptionCommand:
+      name: CreateFreeSubscriptionCommand
+      title: Create Free Subscription Command
+      summary: Command to initialize a free subscription
+      payload:
+        type: object
+        properties:
+          userId:
+            type: string
+            description: User identifier to subscribe
+        required:
+          - userId
+
+    UpdateUserProfileCommand:
+      name: UpdateUserProfileCommand
+      title: Update User Profile Command
+      summary: Command to update a user profile
+      payload:
+        type: object
+        properties:
+          userId:
+            type: string
+          updatedFields:
+            type: object
+            description: Object containing updated profile fields
+        required:
+          - userId
+          - updatedFields

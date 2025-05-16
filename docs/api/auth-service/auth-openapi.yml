@@ -1,0 +1,106 @@
+openapi: 3.0.3
+info:
+  title: Auth API
+  version: 1.0.0
+  description: API for authenticating users and moderators
+
+paths:
+  /auth/register/moderator:
+    post:
+      summary: Moderator Registration
+      description: Admin register a new moderator.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            example:
+              profile_picture: "img.jpg"
+              nickname: "nicknameModerator"
+              email: "moderator@example.com"
+              password: "password"
+      responses:
+        '201':
+          description: Moderator registered successfully
+
+  /auth/register:
+    post:
+      summary: User Registration
+      description: Register a new user and create an account.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            example:
+              profile_picture: "img.jpg"
+              nickname: "nickname"
+              email: "example@example.com"
+              password: "password"
+      responses:
+        '201':
+          description: User registered successfully
+
+  /auth/login:
+    post:
+      summary: User Login
+      description: Authenticates a user with email or nickname and password.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              login: "example@example.com"
+              password: "password"
+      responses:
+        '201':
+          description: Authenticated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+              example:
+                access_token: "tokenValue"
+
+components:
+  schemas:
+    RegisterRequest:
+      type: object
+      properties:
+        profile_picture:
+          type: string
+          example: "img.jpg"
+        nickname:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required:
+        - profile_picture
+        - nickname
+        - email
+        - password
+
+    LoginRequest:
+      type: object
+      properties:
+        login:
+          type: string
+          description: Email or nickname
+        password:
+          type: string
+      required:
+        - login
+        - password
+
+    LoginResponse:
+      type: object
+      properties:
+        access_token:
+          type: string

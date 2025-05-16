@@ -1,0 +1,318 @@
+openapi: 3.0.0
+info:
+  title: Goals Management API
+  version: 1.0.0
+  description: API for creating, viewing, updating, archiving, and restoring goals
+
+servers:
+  - url: https://api.example.com
+    description: Production server
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    GoalCreateRequest:
+      type: object
+      required:
+        - title
+        - is_public
+        - category_name
+        - description
+        - deadline
+        - status
+      properties:
+        title:
+          type: string
+          example: New Goal
+        picture:
+          type: string
+          example: goal.jpg
+          description: URL or filename of the goal picture
+        is_public:
+          type: boolean
+          example: false
+        category_name:
+          type: string
+          example: sport
+        description:
+          type: string
+          example: Goal Description
+        deadline:
+          type: string
+          example: '2025-01-01'
+          description: Deadline date in YYYY-MM-DD format
+        status:
+          type: string
+          example: in progress
+          description: Status of the goal
+
+    UserBrief:
+      type: object
+      properties:
+        nickname:
+          type: string
+          example: nickname
+        profile_picture:
+          type: string
+          example: img.jpg
+
+    CategoryBrief:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: sport
+
+    GoalResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        user:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserBrief'
+        title:
+          type: string
+          example: New Goal
+        picture:
+          type: string
+          example: goal.jpg
+        category:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryBrief'
+        description:
+          type: string
+          example: Goal Description
+        deadline:
+          type: string
+          example: '2025-01-01'
+        status:
+          type: string
+          example: in progress
+        view:
+          type: integer
+          example: 24
+        like:
+          type: integer
+          example: 13
+
+    GoalListItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: New Goal
+        picture:
+          type: string
+          example: goal.jpg
+        category:
+          $ref: '#/components/schemas/CategoryBrief'
+        view:
+          type: integer
+          example: 24
+        like:
+          type: integer
+          example: 13
+
+    GoalUpdateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          example: New Goal Name
+        picture:
+          type: string
+          example: goal.jpg
+        is_public:
+          type: boolean
+          example: true
+        category_name:
+          type: string
+          example: work
+        description:
+          type: string
+          example: Goal description
+        deadline:
+          type: string
+          example: '2024-01-01'
+        status:
+          type: string
+          example: complete
+
+  parameters:
+    goal_id:
+      name: goal_id
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: ID of the goal
+
+    sort:
+      name: sort
+      in: query
+      schema:
+        type: string
+        enum: [views, likes, title]
+      description: Sort goals by this field
+
+    direction:
+      name: direction
+      in: query
+      schema:
+        type: string
+        enum: [ASC, DESC]
+      description: Sort direction ascending or descending
+
+    category_id:
+      name: category_id
+      in: query
+      schema:
+        type: integer
+      description: Filter goals by category ID
+
+    status:
+      name: status
+      in: query
+      schema:
+        type: string
+      description: Filter goals by status
+
+    user_id:
+      name: user_id
+      in: query
+      schema:
+        type: integer
+      description: Filter goals by user ID
+
+    liked:
+      name: liked
+      in: query
+      schema:
+        type: boolean
+      description: Filter goals liked by the user
+
+paths:
+  /goals:
+    post:
+      summary: Create a goal
+      description: Create a public or private goal
+      security:
+        - bearerAuth: []
+      tags:
+        - Goals
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoalCreateRequest'
+      responses:
+        '201':
+          description: Goal created successfully
+
+    get:
+      summary: View goals ratings
+      description: Get list of goals sorted and filtered by various criteria
+      security:
+        - bearerAuth: []
+      tags:
+        - Goals
+      parameters:
+        - $ref: '#/components/parameters/sort'
+        - $ref: '#/components/parameters/direction'
+        - $ref: '#/components/parameters/category_id'
+        - $ref: '#/components/parameters/status'
+        - $ref: '#/components/parameters/user_id'
+        - $ref: '#/components/parameters/liked'
+      responses:
+        '200':
+          description: List of goals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GoalListItem'
+
+  /goals/{goal_id}:
+    get:
+      summary: View goal details
+      description: Get detailed information about a goal
+      security:
+        - bearerAuth: []
+      tags:
+        - Goals
+      parameters:
+        - $ref: '#/components/parameters/goal_id'
+      responses:
+        '200':
+          description: Goal details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoalResponse'
+
+    put:
+      summary: Update a goal
+      description: Update goal data like category, status, etc.
+      security:
+        - bearerAuth: []
+      tags:
+        - Goals
+      parameters:
+        - $ref: '#/components/parameters/goal_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoalUpdateRequest'
+      responses:
+        '200':
+          description: Goal updated successfully
+
+  /goals/{goal_id}/archive:
+    put:
+      summary: Archive a goal
+      description: Archive the specified goal
+      security:
+        - bearerAuth: []
+      tags:
+        - Goals
+      parameters:
+        - $ref: '#/components/parameters/goal_id'
+      responses:
+        '200':
+          description: Goal archived successfully
+
+  /goals/{goal_id}/unarchive:
+    put:
+      summary: Unarchive a goal
+      description: Restore an archived goal
+      security:
+        - bearerAuth: []
+      tags:
+        - Goals
+      parameters:
+        - $ref: '#/components/parameters/goal_id'
+      responses:
+        '200':
+          description: Goal unarchived successfully
