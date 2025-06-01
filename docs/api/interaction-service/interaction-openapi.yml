@@ -2,11 +2,21 @@ openapi: 3.0.3
 info:
   title: Goal Interaction API
   version: 1.0.0
-  description: API for liking, disliking, and commenting on goals.
+  description: API for liking, disliking, commenting on goals, and user management actions.
+
+tags:
+  - name: Like
+    description: Operations related to liking and disliking goals
+  - name: Comment
+    description: Operations for commenting on goals
+  - name: User Management
+    description: Moderator and admin user account actions (suspend, block, unblock)
 
 paths:
   /goals/{goal_id}/like:
     post:
+      tags:
+        - Like
       summary: User likes a public goal
       security:
         - bearerAuth: []
@@ -35,6 +45,8 @@ paths:
 
   /goals/{goal_id}/dislike:
     post:
+      tags:
+        - Like
       summary: User removes like from a public goal
       security:
         - bearerAuth: []
@@ -63,6 +75,8 @@ paths:
 
   /comments:
     post:
+      tags:
+        - Comment
       summary: Comment on other users' goals
       security:
         - bearerAuth: []
@@ -94,6 +108,8 @@ paths:
                 example: {}
 
     get:
+      tags:
+        - Comment
       summary: View a list of goal's comments
       security:
         - bearerAuth: []
@@ -141,6 +157,8 @@ paths:
 
   /comments/{comment_id}:
     put:
+      tags:
+        - Comment
       summary: Users edit their comments
       security:
         - bearerAuth: []
@@ -173,6 +191,8 @@ paths:
                 example: {}
 
     delete:
+      tags:
+        - Comment
       summary: Users delete their comments
       security:
         - bearerAuth: []
@@ -187,10 +207,10 @@ paths:
         '204':
           description: Comment deleted successfully
 
-  # --- Нові шляхи для Suspend User та Block/Unblock Users ---
-
   /users/{user_id}/suspend:
     post:
+      tags:
+        - User Management
       summary: Moderator suspends a user account for violating rules (internal command)
       security:
         - bearerAuth: []
@@ -218,10 +238,11 @@ paths:
                 example:
                   message: "User account suspended."
       x-internal-command: true
-      # це кастомне поле для позначення, що це внутрішня команда
 
   /users/{user_id}/block:
     post:
+      tags:
+        - User Management
       summary: Admin blocks a user account for violating rules (external synchronous command)
       security:
         - bearerAuth: []
@@ -251,6 +272,8 @@ paths:
 
   /users/{user_id}/unblock:
     post:
+      tags:
+        - User Management
       summary: Admin unblocks a user account (external synchronous command)
       security:
         - bearerAuth: []

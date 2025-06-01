@@ -1,31 +1,248 @@
-services:
-  auth-service:
-    build: ./auth-service
-    ports:
-      - "4005:4005"
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-service-db:5432/db
-      - SPRING_DATASOURCE_USERNAME=admin_user
-      - SPRING_DATASOURCE_PASSWORD=password
-      - SPRING_JPA_HIBERNATE_DDL_AUTO:update
-      - SPRING_SQL_INIT_MODE:always
-    depends_on:
-      - auth-service-db
-    networks:
-      - internal
+version: '3.8'
 
-  auth-service-db:
-    image: postgres:latest
-    container_name: auth-service-db
-    ports:
-      - "5001:5432"
+services:
+  ### AUTH SERVICE DB MASTER
+  auth-service-db-master:
+    image: postgres:15
+    container_name: auth-service-db-master
     environment:
       POSTGRES_DB: db
       POSTGRES_USER: admin_user
       POSTGRES_PASSWORD: password
+    volumes:
+      - auth-db-master-data:/var/lib/postgresql/data
+      - ./auth-master/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./auth-master/pg_hba.conf:/etc/postgresql/pg_hba.conf
+    ports:
+      - "5001:5432"
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
     networks:
       - internal
 
+  ### AUTH SERVICE DB REPLICA
+  auth-service-db-replica:
+    image: postgres:15
+    container_name: auth-service-db-replica
+    depends_on:
+      - auth-service-db-master
+    environment:
+      POSTGRES_DB: db
+      POSTGRES_USER: admin_user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - auth-db-replica-data:/var/lib/postgresql/data
+      - ./auth-replica/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./auth-replica/pg_hba.conf:/etc/postgresql/pg_hba.conf
+    ports:
+      - "5003:5432"
+    user: postgres
+    command: >
+      bash -c "
+        until pg_isready -h auth-service-db-master -p 5432; do
+          echo 'Waiting for auth master...';
+          sleep 2;
+        done;
+        pg_basebackup -h auth-service-db-master -D /var/lib/postgresql/data -U admin_user -vP --wal-method=stream;
+        postgres -c config_file=/etc/postgresql/postgresql.conf
+      "
+    networks:
+      - internal
+
+  ### GOAL SERVICE DB MASTER
+  goal-service-db-master:
+    image: postgres:15
+    container_name: goal-service-db-master
+    environment:
+      POSTGRES_DB: db
+      POSTGRES_USER: admin_user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - goal-db-master-data:/var/lib/postgresql/data
+      - ./goal-master/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./goal-master/pg_hba.conf:/etc/postgresql/pg_hba.conf
+    ports:
+      - "5000:5432"
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    networks:
+      - internal
+
+  ### GOAL SERVICE DB REPLICA
+  goal-service-db-replica:
+    image: postgres:15
+    container_name: goal-service-db-replica
+    depends_on:
+      - goal-service-db-master
+    environment:
+      POSTGRES_DB: db
+      POSTGRES_USER: admin_user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - goal-db-replica-data:/var/lib/postgresql/data
+      - ./goal-replica/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./goal-replica/pg_hba.conf:/etc/postgresql/pg_hba.conf
+    ports:
+      - "5004:5432"
+    user: postgres
+    command: >
+      bash -c "
+        until pg_isready -h goal-service-db-master -p 5432; do
+          echo 'Waiting for goal master...';
+          sleep 2;
+        done;
+        pg_basebackup -h goal-service-db-master -D /var/lib/postgresql/data -U admin_user -vP --wal-method=stream;
+        postgres -c config_file=/etc/postgresql/postgresql.conf
+      "
+    networks:
+      - internal
+
+  ### SUBSCRIPTION SERVICE DB MASTER
+  subscription-service-db-master:
+    image: postgres:15
+    container_name: subscription-service-db-master
+    environment:
+      POSTGRES_DB: db
+      POSTGRES_USER: admin_user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - subscription-db-master-data:/var/lib/postgresql/data
+      - ./subscription-master/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./subscription-master/pg_hba.conf:/etc/postgresql/pg_hba.conf
+    ports:
+      - "5002:5432"
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    networks:
+      - internal
+
+  ### SUBSCRIPTION SERVICE DB REPLICA
+  subscription-service-db-replica:
+    image: postgres:15
+    container_name: subscription-service-db-replica
+    depends_on:
+      - subscription-service-db-master
+    environment:
+      POSTGRES_DB: db
+      POSTGRES_USER: admin_user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - subscription-db-replica-data:/var/lib/postgresql/data
+      - ./subscription-replica/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./subscription-replica/pg_hba.conf:/etc/postgresql/pg_hba.conf
+    ports:
+      - "5005:5432"
+    user: postgres
+    command: >
+      bash -c "
+        until pg_isready -h subscription-service-db-master -p 5432; do
+          echo 'Waiting for subscription master...';
+          sleep 2;
+        done;
+        pg_basebackup -h subscription-service-db-master -D /var/lib/postgresql/data -U admin_user -vP --wal-method=stream;
+        postgres -c config_file=/etc/postgresql/postgresql.conf
+      "
+    networks:
+      - internal
+
+  auth-service-1:
+    build: ./auth-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-service-db-master:5432/db
+      - SPRING_DATASOURCE_USERNAME=admin_user
+      - SPRING_DATASOURCE_PASSWORD=password
+    depends_on:
+      - auth-service-db-master
+    networks:
+      - internal
+
+  auth-service-2:
+    build: ./auth-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-service-db-master:5432/db
+      - SPRING_DATASOURCE_USERNAME=admin_user
+      - SPRING_DATASOURCE_PASSWORD=password
+    depends_on:
+      - auth-service-db-master
+    networks:
+      - internal
+
+  goal-service-1:
+    build: ./goal-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://goal-service-db-master:5432/db
+      - SPRING_DATASOURCE_USERNAME=admin_user
+      - SPRING_DATASOURCE_PASSWORD=password
+    depends_on:
+      - goal-service-db-master
+    networks:
+      - internal
+
+  goal-service-2:
+    build: ./goal-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://goal-service-db-master:5432/db
+      - SPRING_DATASOURCE_USERNAME=admin_user
+      - SPRING_DATASOURCE_PASSWORD=password
+    depends_on:
+      - goal-service-db-master
+    networks:
+      - internal
+
+  subscription-service-1:
+    build: ./subscription-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://subscription-service-db-master:5432/db
+      - SPRING_DATASOURCE_USERNAME=admin_user
+      - SPRING_DATASOURCE_PASSWORD=password
+    depends_on:
+      - subscription-service-db-master
+    networks:
+      - internal
+
+  subscription-service-2:
+    build: ./subscription-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://subscription-service-db-master:5432/db
+      - SPRING_DATASOURCE_USERNAME=admin_user
+      - SPRING_DATASOURCE_PASSWORD=password
+    depends_on:
+      - subscription-service-db-master
+    networks:
+      - internal
+
+  ### === API GATEWAY ===
+  api-gateway-1:
+    build: ./api-gateway
+    expose:
+      - "4004"
+    depends_on:
+      - auth-service-1
+      - goal-service-1
+      - subscription-service-1
+    networks:
+      - internal
+
+  api-gateway-2:
+    build: ./api-gateway
+    expose:
+      - "4004"
+    depends_on:
+      - auth-service-1
+      - goal-service-1
+      - subscription-service-1
+    networks:
+      - internal
+
+  api-gateway-3:
+    build: ./api-gateway
+    expose:
+      - "4004"
+    depends_on:
+      - auth-service-1
+      - goal-service-1
+      - subscription-service-1
+    networks:
+      - internal
+
+  ### === NGINX ===
   nginx:
     image: nginx:latest
     ports:
@@ -40,59 +257,14 @@ services:
       - internal
     restart: always
 
-  api-gateway-1:
-    build: ./api-gateway
-    ports:
-      - "4101:4004"
-    depends_on:
-      - auth-service
-      - goal-service
-    networks:
-      - internal
-
-  api-gateway-2:
-    build: ./api-gateway
-    ports:
-      - "4102:4004"
-    depends_on:
-      - auth-service
-      - goal-service
-    networks:
-      - internal
-
-  api-gateway-3:
-    build: ./api-gateway
-    ports:
-      - "4103:4004"
-    depends_on:
-      - auth-service
-      - goal-service
-    networks:
-      - internal
-
-  goal-service:
-    build: ./goal-service
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://goal-service-db:5432/db
-      - SPRING_DATASOURCE_USERNAME=admin_user
-      - SPRING_DATASOURCE_PASSWORD=password
-    depends_on:
-      - goal-service-db
-    networks:
-      - internal
-
-  goal-service-db:
-    image: postgres:latest
-    container_name: goal-service-db
-    ports:
-      - "5000:5432"
-    environment:
-      POSTGRES_DB: db
-      POSTGRES_USER: admin_user
-      POSTGRES_PASSWORD: password
-    networks:
-      - internal
-
 networks:
   internal:
     driver: bridge
+
+volumes:
+  auth-db-master-data:
+  auth-db-replica-data:
+  goal-db-master-data:
+  goal-db-replica-data:
+  subscription-db-master-data:
+  subscription-db-replica-data:

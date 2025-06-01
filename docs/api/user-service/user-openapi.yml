@@ -4,10 +4,6 @@ info:
   version: 1.0.0
   description: API for searching users and managing friendships
 
-servers:
-  - url: https://api.example.com
-    description: Production server
-
 security:
   - bearerAuth: []
 
@@ -78,6 +74,14 @@ components:
         type: string
       description: ID of the friendship or friend request
 
+tags:
+  - name: Users
+    description: Operations related to user search and information
+  - name: Friend Requests
+    description: Operations for managing friend requests (sending, accepting, declining)
+  - name: Friends
+    description: Operations related to managing friend lists
+
 paths:
   /users/search:
     get:
@@ -108,7 +112,7 @@ paths:
       security:
         - bearerAuth: []
       tags:
-        - Friendships
+        - Friend Requests
       requestBody:
         required: true
         content:
@@ -131,7 +135,7 @@ paths:
       security:
         - bearerAuth: []
       tags:
-        - Friendships
+        - Friend Requests
       responses:
         '200':
           description: List of active friend requests
@@ -153,7 +157,7 @@ paths:
       security:
         - bearerAuth: []
       tags:
-        - Friendships
+        - Friends
       responses:
         '200':
           description: List of friends
@@ -175,7 +179,7 @@ paths:
       security:
         - bearerAuth: []
       tags:
-        - Friendships
+        - Friend Requests
       parameters:
         - $ref: '#/components/parameters/friendship_id'
       responses:
@@ -195,7 +199,7 @@ paths:
       security:
         - bearerAuth: []
       tags:
-        - Friendships
+        - Friend Requests
       parameters:
         - $ref: '#/components/parameters/friendship_id'
       responses:
@@ -215,7 +219,7 @@ paths:
       security:
         - bearerAuth: []
       tags:
-        - Friendships
+        - Friends
       parameters:
         - $ref: '#/components/parameters/friendship_id'
       responses:
